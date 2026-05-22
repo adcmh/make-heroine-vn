@@ -24,7 +24,7 @@ screen confirm(message, yes_action, no_action):
                     action no_action
 
 style confirm_frame:
-    background Frame([Solid("#1a1a2ecc")], 10, 10)
+    background Frame(Solid("#1a1a2ecc"), 10, 10)
 style confirm_button:
     size_group "confirm"
 style confirm_button_text:
