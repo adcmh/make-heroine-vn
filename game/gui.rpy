@@ -4,10 +4,10 @@ init python:
     gui.init(1920, 1080)
 
     ## 中文字体（必须，否则汉字不显示）
-    gui.default_font = "msyh.ttc"
-    gui.text_font = "msyh.ttc"
-    gui.name_text_font = "msyh.ttc"
-    gui.interface_text_font = "msyh.ttc"
+    gui.default_font = "simhei.ttf"
+    gui.text_font = "simhei.ttf"
+    gui.name_text_font = "simhei.ttf"
+    gui.interface_text_font = "simhei.ttf"
 
     ## 色彩主题
     gui.accent_color = '#ffa07a'
