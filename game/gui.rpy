@@ -1,8 +1,13 @@
 ﻿## GUI 界面配置
 
 init python:
-    ## 必须先初始化分辨率，其他设置在此之后覆盖
     gui.init(1920, 1080)
+
+    ## 中文字体（必须，否则汉字不显示）
+    gui.default_font = "msyh.ttc"
+    gui.text_font = "msyh.ttc"
+    gui.name_text_font = "msyh.ttc"
+    gui.interface_text_font = "msyh.ttc"
 
     ## 色彩主题
     gui.accent_color = '#ffa07a'
