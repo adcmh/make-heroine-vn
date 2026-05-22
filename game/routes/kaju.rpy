@@ -4,7 +4,7 @@
 
 label route_kaju:
     scene bg clubroom with dissolve
-    play music "audio/bgm_romance.ogg" fadein 1.0
+    # TODO: play music "audio/bgm_romance.ogg" fadein 1.0
 
     "在所有女主角中——最早的其实是佳树。"
 

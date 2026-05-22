@@ -4,7 +4,7 @@
 
 label route_shikishi:
     scene bg clubroom with dissolve
-    play music "audio/bgm_romance.ogg" fadein 1.0
+    # TODO: play music "audio/bgm_romance.ogg" fadein 1.0
 
     "志喜屋梦子学姐——文艺社最神秘的成员。"
     "她总是在窗边的沙发上躺着，像一具丧尸。"

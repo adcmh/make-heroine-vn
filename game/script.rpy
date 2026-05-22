@@ -5,7 +5,7 @@
 
 ## 游戏入口
 label main_menu:
-    play music "audio/bgm_main.ogg" fadein 1.0
+    # TODO: # TODO: play music "audio/bgm_main.ogg" fadein 1.0
     return
 
 label start:
@@ -21,7 +21,7 @@ label start:
 ## ============================================================
 label chapter_01:
     scene bg restaurant with dissolve
-    play music "audio/bgm_main.ogg" fadein 1.0
+    # TODO: # TODO: play music "audio/bgm_main.ogg" fadein 1.0
 
     "那个周末的傍晚，我像往常一样一个人坐在家庭餐厅的角落，一边喝着饮料一边看轻小说。"
     "隔壁座位上，一对高中生男女正在谈话。我本想专心看书，但他们的对话实在太过引人注目——"

@@ -4,7 +4,7 @@
 
 label route_shiratama:
     scene bg clubroom with dissolve
-    play music "audio/bgm_romance.ogg" fadein 1.0
+    # TODO: play music "audio/bgm_romance.ogg" fadein 1.0
 
     "天爱星的告白后，文艺社的气氛变得微妙。"
     "白玉璃子——这个一年级的学妹——最近总是沉默。"

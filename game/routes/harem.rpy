@@ -4,7 +4,7 @@
 
 label route_harem:
     scene bg clubroom with dissolve
-    play music "audio/bgm_tense.ogg" fadein 1.0
+    # TODO: play music "audio/bgm_tense.ogg" fadein 1.0
 
     "天爱星的告白后——事情很快就失控了。"
 

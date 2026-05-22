@@ -4,7 +4,7 @@
 
 label route_yanaami:
     scene bg clubroom with dissolve
-    play music "audio/bgm_romance.ogg" fadein 1.0
+    # TODO: # TODO: play music "audio/bgm_romance.ogg" fadein 1.0
 
     "天爱星的告白之后，我的生活表面上看没什么变化。"
     "但八奈见杏菜变了。"

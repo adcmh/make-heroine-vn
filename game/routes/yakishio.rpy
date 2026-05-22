@@ -4,7 +4,7 @@
 
 label route_yakishio:
     scene bg track with dissolve
-    play music "audio/bgm_romance.ogg" fadein 1.0
+    # TODO: play music "audio/bgm_romance.ogg" fadein 1.0
 
     "烧盐柠檬每天放学后都在跑步。"
     "她跑步的理由有很多——保持体能、准备大赛、缓解压力。"

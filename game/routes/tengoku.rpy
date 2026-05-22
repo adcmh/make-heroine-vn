@@ -4,7 +4,7 @@
 
 label route_max:
     scene bg bridge with dissolve
-    play music "audio/bgm_romance.ogg" fadein 1.0
+    # TODO: play music "audio/bgm_romance.ogg" fadein 1.0
 
     "向山大池的桥上。夕阳把桥面染成橙色。"
     "马剃天爱星站在我面前，说出了她的告白。"

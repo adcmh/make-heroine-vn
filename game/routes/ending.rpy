@@ -4,8 +4,8 @@
 
 label ending_credits:
     scene black with dissolve
-    stop music fadeout 2.0
-    play music "audio/bgm_main.ogg" fadein 2.0
+    # TODO: stop music fadeout 2.0
+    # TODO: play music "audio/bgm_main.ogg" fadein 2.0
 
     ""
 
