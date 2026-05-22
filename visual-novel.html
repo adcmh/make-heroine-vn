@@ -13,6 +13,7 @@ body{
 #game{position:relative;width:100%;height:100%}
 #bg-layer{position:absolute;inset:0;transition:opacity .5s}
 #bg-layer.fade{opacity:0}
+#bg-canvas{width:100%;height:100%;display:block}
 #char-layer{position:absolute;bottom:0;left:0;right:0;top:0;display:flex;justify-content:center;align-items:flex-end;pointer-events:none}
 .char-sprite{max-height:70vh;object-fit:contain;margin:0 40px;transition:opacity .4s}
 #dialogue-box{
@@ -55,7 +56,7 @@ body{
 </head>
 <body>
 <div id="game">
-  <div id="bg-layer"></div>
+  <div id="bg-layer"><canvas id="bg-canvas"></canvas></div>
   <div id="char-layer"></div>
   <div id="dialogue-box">
     <div id="name-tag"></div>
@@ -93,24 +94,184 @@ const BG_COLORS = {
   shrine:'#1a1a3f', station:'#3f3a2a', gym:'#4a4a2f', printroom:'#3a3a3f',
   bridge:'#2a3f4f', cafe:'#3a2f2f', beach:'#1a3f5f', wedding:'#5a4a5a'
 };
-const BG_GRADIENTS = {
-  black:'#000',
-  restaurant:'linear-gradient(135deg, #2d1f1a 0%, #1a1010 50%, #2d1f1a 100%)',
-  classroom:'linear-gradient(135deg, #3a3a4a 0%, #2a2a3a 50%, #3a3a4a 100%)',
-  hallway:'linear-gradient(180deg, #4a4a3a 0%, #3a3a2a 50%, #2a2a3a 100%)',
-  clubroom:'linear-gradient(135deg, #3a2f1a 0%, #2a1f10 50%, #3a2f1a 100%)',
-  rooftop:'linear-gradient(180deg, #1a2f3f 0%, #0a1f2f 30%, #2a4f6f 100%)',
-  track:'linear-gradient(180deg, #2f3a1a 0%, #1a2f0a 50%, #4a5a2a 100%)',
-  infirmary:'linear-gradient(180deg, #4a5a5a 0%, #3a4a4a 50%, #5a6a6a 100%)',
-  shrine:'linear-gradient(180deg, #1a1a3f 0%, #0a0a2f 50%, #2a2a4f 100%)',
-  station:'linear-gradient(135deg, #3f3a2a 0%, #2a2a1a 50%, #4f4a3a 100%)',
-  gym:'linear-gradient(180deg, #4a4a2f 0%, #3a3a1f 50%, #5a5a3f 100%)',
-  printroom:'linear-gradient(180deg, #3a3a3f 0%, #2a2a2f 50%, #4a4a4f 100%)',
-  bridge:'linear-gradient(180deg, #2a3f4f 0%, #1a2f3f 30%, #4a6f8f 100%)',
-  cafe:'linear-gradient(135deg, #3a2f2f 0%, #2a1f1f 50%, #4a3f3f 100%)',
-  beach:'linear-gradient(180deg, #1a3f5f 0%, #0a2f4f 30%, #3a6f9f 100%)',
-  wedding:'linear-gradient(135deg, #5a4a5a 0%, #4a3a4a 50%, #6a5a6a 100%)'
-};
+// ===== 代码生成场景背景 =====
+function drawScene(ctx, id, w, h) {
+  ctx.clearRect(0, 0, w, h);
+  const sky = (top, bot) => { const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, top); g.addColorStop(1, bot); return g; };
+  const rect = (x, y, rw, rh, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, rw, rh); };
+  const circ = (x, y, r, c) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); };
+  const light = (x, y, r, c) => { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, c); g.addColorStop(1, 'transparent'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); };
+
+  const scenes = {
+    black: () => rect(0, 0, w, h, '#000'),
+
+    restaurant: () => {
+      rect(0, 0, w, h, '#1a1010');
+      rect(0, h * 0.55, w, h * 0.45, '#2d1f1a');
+      rect(0, h * 0.6, w, 3, '#4a3a2a');
+      for (let i = 0; i < 3; i++) { const x = w * 0.15 + i * w * 0.3; rect(x, h * 0.48, w * 0.15, h * 0.12, '#3a2a1a'); rect(x - 5, h * 0.46, w * 0.15 + 10, 4, '#5a4a3a'); }
+      for (let i = 0; i < 3; i++) { light(w * 0.2 + i * w * 0.3, h * 0.2, w * 0.12, 'rgba(255,200,150,0.15)'); }
+      for (let i = 0; i < 5; i++) { const x = w * 0.1 + i * w * 0.2; rect(x, h * 0.7, w * 0.08, h * 0.25, '#3a2010'); rect(x + w * 0.025, h * 0.68, w * 0.03, h * 0.04, '#5a3020'); }
+    },
+
+    classroom: () => {
+      rect(0, 0, w, h, '#1a1a2e');
+      rect(0, h * 0.5, w, h * 0.5, '#3a3a4a');
+      rect(0, h * 0.52, w, 2, '#5a5a6a');
+      for (let i = 0; i < 4; i++) { const x = w * 0.1 + i * w * 0.22; rect(x, h * 0.35, w * 0.1, h * 0.20, '#2a2a40'); rect(x + 2, h * 0.37, w * 0.06, h * 0.12, '#4a6080'); }
+      rect(w * 0.05, h * 0.15, w * 0.25, h * 0.25, '#2a3050'); rect(w * 0.08, h * 0.18, w * 0.19, h * 0.19, '#3a4a6a'); rect(w * 0.5, h * 0.6, w * 0.3, 2, '#666');
+      for (let i = 0; i < 8; i++) { rect(w * 0.15 + i * w * 0.1, h * 0.62, w * 0.07, h * 0.05, '#4a4a5a'); }
+    },
+
+    hallway: () => {
+      rect(0, 0, w, h, '#2a2a3a');
+      rect(0, h * 0.55, w, h * 0.45, '#3a3a4a');
+      rect(0, h * 0.57, w, 2, '#666');
+      for (let i = 0; i < 6; i++) { const x = w * 0.05 + i * w * 0.16; rect(x, h * 0.5, w * 0.12, h * 0.5, '#4a4a5a'); rect(x + 2, h * 0.55, w * 0.08, h * 0.4, '#3a4a5a'); }
+      for (let i = 0; i < 5; i++) { rect(w * 0.08 + i * w * 0.16, h * 0.25, w * 0.08, h * 0.2, '#4a5a7a'); rect(0, 0, 1, 1, ''); }
+      for (let i = 0; i < 4; i++) { light(w * 0.15 + i * w * 0.25, h * 0.08, w * 0.06, 'rgba(255,255,200,0.12)'); }
+      const vp = w * 0.5; for (let i = 0; i < 12; i++) { const y = h * 0.6 + i * (h * 0.035); const sx = w * 0.1 + (y - h * 0.6) * 0.5; rect(sx, y, w * 0.8 - (y - h * 0.6), 1, '#555'); }
+    },
+
+    clubroom: () => {
+      rect(0, 0, w, h, '#1a1008');
+      rect(0, h * 0.5, w, h * 0.5, '#2a1a0a');
+      rect(w * 0.7, 0, w * 0.3, h * 0.8, '#2a1a10');
+      for (let i = 0; i < 4; i++) { rect(w * 0.72, h * 0.05 + i * h * 0.18, w * 0.26, h * 0.03, '#4a3020'); rect(w * 0.72, h * 0.07 + i * h * 0.18, w * 0.26, h * 0.12, '#3a2010'); }
+      rect(w * 0.05, h * 0.6, w * 0.4, h * 0.1, '#3a2010');
+      rect(w * 0.08, h * 0.4, w * 0.25, h * 0.25, '#5a4030'); rect(w * 0.1, h * 0.42, w * 0.21, h * 0.21, '#7a90b0');
+      light(w * 0.2, h * 0.3, w * 0.25, 'rgba(255,180,100,0.25)');
+      for (let i = 0; i < 5; i++) { rect(w * 0.05, h * 0.15 + i * h * 0.12, w * 0.04, h * 0.07, '#4a3020'); }
+    },
+
+    rooftop: () => {
+      const g = sky('#1a3a5a', '#fa8a5a'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 6; i++) { light(w * 0.1 + i * w * 0.16, h * 0.1 + i % 2 * h * 0.05, w * 0.03, 'rgba(255,255,255,0.15)'); }
+      circ(w * 0.75, h * 0.15, w * 0.04, 'rgba(255,255,200,0.9)');
+      rect(0, h * 0.65, w, h * 0.35, '#2a3a4a');
+      rect(0, h * 0.65, w, 3, '#5a6a7a');
+      for (let i = 0; i < 20; i++) { rect(i * w / 20, h * 0.66, w / 42, h * 0.15, '#3a4a5a'); }
+      rect(0, h * 0.78, w, 2, '#5a6a7a');
+      for (let i = 0; i < 5; i++) { const rx = w * 0.6 + i * w * 0.08; rect(rx, h * 0.45, w * 0.04, h * 0.22, '#1a2a3a'); rect(rx - 2, h * 0.45, w * 0.04 + 4, 2, '#4a5a6a'); }
+    },
+
+    track: () => {
+      const g = sky('#4a7a9a', '#8ab8d8'); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      rect(0, h * 0.55, w, h * 0.45, '#c46a3a');
+      rect(0, h * 0.55, w, 2, '#8a4a2a');
+      for (let i = 0; i < 6; i++) { rect(0, h * 0.55 + i * h * 0.08, w, 2, '#fff'); }
+      rect(w * 0.02, h * 0.3, w * 0.2, h * 0.27, '#5a8a5a'); rect(w * 0.78, h * 0.3, w * 0.2, h * 0.27, '#5a8a5a');
+      rect(w * 0.3, h * 0.5, w * 0.4, h * 0.08, '#5a6a4a');
+      for (let i = 0; i < 3; i++) { const x = w * 0.35 + i * w * 0.12; rect(x, h * 0.35, w * 0.08, h * 0.22, '#7a9a7a'); rect(x + w * 0.015, h * 0.33, w * 0.05, h * 0.04, '#6a8a4a'); }
+    },
+
+    infirmary: () => {
+      rect(0, 0, w, h, '#e8e0d8');
+      rect(0, h * 0.55, w, h * 0.45, '#d8d0c8');
+      rect(w * 0.05, h * 0.45, w * 0.35, h * 0.25, '#f0f0f0'); rect(w * 0.07, h * 0.42, w * 0.31, h * 0.08, '#e0e0e0');
+      rect(w * 0.55, 0, w * 0.08, h, 'rgba(255,255,255,0.3)');
+      rect(w * 0.7, h * 0.2, w * 0.2, h * 0.35, '#b0c8d8'); rect(w * 0.72, h * 0.22, w * 0.16, h * 0.3, '#c8e0f0');
+      rect(w * 0.82, h * 0.55, w * 0.15, h * 0.3, '#e0d8d0');
+      for (let i = 0; i < 4; i++) { rect(w * 0.84, h * 0.58 + i * h * 0.07, w * 0.11, h * 0.03, '#ccc'); }
+    },
+
+    shrine: () => {
+      rect(0, 0, w, h, '#0a0a2a');
+      circ(w * 0.8, h * 0.12, w * 0.05, 'rgba(255,255,220,0.9)');
+      for (let i = 0; i < 15; i++) { light(w * Math.random(), h * Math.random() * 0.6, 2, 'rgba(255,255,255,0.5)'); }
+      const seed = [0.1, 0.2, 0.35, 0.5, 0.7, 0.85, 0.95, 0.15, 0.6, 0.8, 0.3, 0.55, 0.9, 0.05, 0.75];
+      for (let i = 0; i < 15; i++) { circ(w * seed[i], h * (0.08 + (i % 5) * 0.09), i < 5 ? 2.5 : 1.8, 'rgba(255,255,255,' + (0.5 + (i % 3) * 0.2) + ')'); }
+      rect(w * 0.3, h * 0.25, w * 0.08, h * 0.45, '#4a2020');
+      rect(w * 0.62, h * 0.25, w * 0.08, h * 0.45, '#4a2020');
+      rect(w * 0.25, h * 0.25, w * 0.5, h * 0.08, '#6a3030');
+      rect(w * 0.25, h * 0.62, w * 0.5, h * 0.08, '#6a3030');
+      for (let i = 0; i < 8; i++) { rect(w * 0.05 + i * w * 0.12, h * 0.7, w * 0.1, h * 0.05, '#1a1a3a'); }
+      for (let i = 0; i < 4; i++) { light(w * 0.1 + i * w * 0.24, h * 0.3, w * 0.04, 'rgba(255,220,180,0.08)'); }
+    },
+
+    station: () => {
+      rect(0, 0, w, h, '#1a1a2e');
+      rect(0, h * 0.65, w, h * 0.35, '#3a3a4a');
+      rect(0, h * 0.65, w, 3, '#aaa');
+      for (let i = 0; i < 5; i++) { rect(w * 0.1 + i * w * 0.2, h * 0.1, w * 0.06, h * 0.55, '#4a4a5a'); }
+      rect(w * 0.05, h * 0.12, w * 0.9, h * 0.04, '#5a5a6a');
+      for (let i = 0; i < 5; i++) { light(w * 0.13 + i * w * 0.2, h * 0.08, w * 0.03, 'rgba(255,240,200,0.3)'); }
+      rect(w * 0.15, h * 0.7, w * 0.7, h * 0.02, '#ffd700');
+      for (let i = 0; i < 8; i++) { rect(w * 0.05 + i * w * 0.12, h * 0.7, w * 0.08, h * 0.25, '#4a4a5a'); }
+      circ(w * 0.85, h * 0.15, w * 0.04, 'rgba(255,255,220,0.8)');
+    },
+
+    gym: () => {
+      rect(0, 0, w, h, '#2a2a1a');
+      rect(0, h * 0.6, w, h * 0.4, '#c4a060');
+      for (let i = 0; i < 12; i++) { rect(0, h * 0.6 + i * h * 0.035, w, 1.5, '#a08040'); }
+      for (let i = 0; i < 4; i++) { rect(w * 0.1 + i * w * 0.25, 0, w * 0.04, h * 0.6, '#3a3a2a'); }
+      rect(w * 0.05, h * 0.08, w * 0.9, h * 0.03, '#4a4a3a');
+      rect(w * 0.75, h * 0.05, w * 0.08, h * 0.02, '#888'); rect(w * 0.75, h * 0.07, w * 0.02, h * 0.2, '#888'); rect(w * 0.81, h * 0.07, w * 0.02, h * 0.12, '#888'); rect(w * 0.79, h * 0.07, w * 0.04, h * 0.08, '#aaa');
+      for (let i = 0; i < 6; i++) { light(w * 0.1 + i * w * 0.16, h * 0.05, w * 0.04, 'rgba(255,255,200,0.1)'); }
+    },
+
+    printroom: () => {
+      rect(0, 0, w, h, '#2a2a2f');
+      rect(0, h * 0.55, w, h * 0.45, '#3a3a3f');
+      rect(w * 0.05, h * 0.1, w * 0.25, h * 0.45, '#4a4a4f'); rect(w * 0.07, h * 0.12, w * 0.21, h * 0.4, '#555');
+      rect(w * 0.4, h * 0.5, w * 0.4, h * 0.3, '#4a4a4f');
+      for (let i = 0; i < 6; i++) { rect(w * 0.42, h * 0.52 + i * h * 0.05, w * 0.36, h * 0.03, '#e0e0d0'); }
+      rect(w * 0.6, h * 0.05, w * 0.2, h * 0.2, '#4a4a4f'); rect(w * 0.63, h * 0.08, w * 0.14, h * 0.14, '#333');
+      light(w * 0.7, h * 0.05, w * 0.12, 'rgba(255,255,200,0.1)');
+    },
+
+    bridge: () => {
+      const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#1a3050'); g.addColorStop(0.4, '#3a6080'); g.addColorStop(0.7, '#fa7a3a'); g.addColorStop(1, '#fa5a2a');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      circ(w * 0.85, h * 0.18, w * 0.05, 'rgba(255,200,100,0.9)');
+      rect(0, h * 0.55, w, h * 0.45, '#1a3040');
+      rect(w * 0.05, h * 0.5, w * 0.08, h * 0.2, '#4a5a6a');
+      rect(w * 0.87, h * 0.5, w * 0.08, h * 0.2, '#4a5a6a');
+      rect(w * 0.05, h * 0.5, w * 0.9, 3, '#7a8a9a');
+      rect(w * 0.05, h * 0.65, w * 0.9, 2, '#7a8a9a');
+      for (let i = 0; i < 12; i++) { rect(w * 0.08 + i * w * 0.075, h * 0.53, w * 0.015, h * 0.12, '#5a6a7a'); }
+      for (let i = 0; i < 3; i++) { const rx = w * 0.3 + i * w * 0.15; rect(rx, h * 0.7, w * 0.04, h * 0.15, '#2a3a4a'); rect(rx + w * 0.01, h * 0.68, w * 0.02, h * 0.04, '#3a5a3a'); }
+      rect(0, h * 0.85, w, h * 0.15, 'rgba(0,0,0,0.3)');
+    },
+
+    cafe: () => {
+      rect(0, 0, w, h, '#1a1010');
+      rect(0, h * 0.5, w, h * 0.5, '#2a1a15');
+      rect(0, h * 0.52, w, 2, '#5a4030');
+      rect(w * 0.6, h * 0.15, w * 0.25, h * 0.4, '#2a1820'); rect(w * 0.62, h * 0.17, w * 0.21, h * 0.36, '#7a9080');
+      for (let i = 0; i < 2; i++) { const x = w * 0.15 + i * w * 0.35; rect(x, h * 0.5, w * 0.18, h * 0.15, '#3a2018'); rect(x + w * 0.05, h * 0.47, w * 0.08, h * 0.05, '#5a3020'); }
+      for (let i = 0; i < 3; i++) { light(w * 0.25 + i * w * 0.25, h * 0.2, w * 0.1, 'rgba(255,180,140,0.12)'); }
+      for (let i = 0; i < 4; i++) { rect(w * 0.15 + i * w * 0.22, h * 0.7, w * 0.12, h * 0.25, '#2a1810'); rect(w * 0.18 + i * w * 0.22, h * 0.68, w * 0.06, h * 0.04, '#4a3020'); }
+    },
+
+    beach: () => {
+      const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#2a5080'); g.addColorStop(0.35, '#5a90c0'); g.addColorStop(0.45, '#8ac0e0'); g.addColorStop(0.5, '#c8d8a0'); g.addColorStop(0.55, '#e8d8a8'); g.addColorStop(1, '#d8c898');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      circ(w * 0.85, h * 0.1, w * 0.06, 'rgba(255,240,200,0.9)');
+      for (let i = 0; i < 5; i++) { light(w * 0.15 + i * w * 0.17, h * 0.45, w * 0.02, 'rgba(255,255,255,0.2)'); }
+      rect(0, h * 0.5, w, h * 0.5, '#e8d8a0');
+      for (let i = 0; i < 3; i++) { const x = w * 0.05 + i * w * 0.15; rect(x, h * 0.6, w * 0.03, h * 0.2, '#8a7a5a'); rect(x + w * 0.005, h * 0.58, w * 0.02, h * 0.05, '#6a8a4a'); }
+    },
+
+    wedding: () => {
+      rect(0, 0, w, h, '#3a2a3a');
+      rect(0, h * 0.5, w, h * 0.5, '#4a3a4a');
+      rect(w * 0.3, h * 0.55, w * 0.4, h * 0.05, '#8a7a8a');
+      rect(w * 0.4, h * 0.08, w * 0.2, h * 0.48, '#6a4a6a');
+      rect(w * 0.42, h * 0.06, w * 0.16, h * 0.06, '#8a6a8a');
+      for (let i = 0; i < 3; i++) { rect(w * 0.35 + i * w * 0.15, h * 0.55, w * 0.03, h * 0.3, '#6a5a6a'); rect(w * 0.34 + i * w * 0.15, h * 0.53, w * 0.05, h * 0.04, '#9a7a8a'); }
+      for (let i = 0; i < 8; i++) { light(w * 0.1 + i * w * 0.11, h * 0.2 + i % 2 * h * 0.1, w * 0.03, 'rgba(255,200,220,0.15)'); }
+      for (let i = 0; i < 6; i++) { rect(w * 0.1 + i * w * 0.14, h * 0.7, w * 0.04, h * 0.25, '#5a4a5a'); }
+    }
+  };
+
+  (scenes[id] || scenes.black)();
+  // Add vignette overlay
+  const vg = ctx.createRadialGradient(w / 2, h / 2, w * 0.5, w / 2, h / 2, w * 0.8);
+  vg.addColorStop(0, 'transparent'); vg.addColorStop(1, 'rgba(0,0,0,0.4)');
+  ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
+}
 const SPRITE_MAP = {
   YN: { default:'sprites/yn_default.png', smile:'sprites/yn_smile.png', embarrassed:'sprites/yn_embarrassed.png' },
   SY: { default:'sprites/sy_default.jpg' },
@@ -127,13 +288,6 @@ const BGM_MAP = {
   sy_theme: 'audio/bgm_sy_crazyforyou.mp3',
   xj_theme: 'audio/bgm_xj_ashitamo.mp3',
   ending: 'audio/bgm_ending.mp3'
-};
-const BG_BGM_MAP = {
-  restaurant:'common', classroom:'common', hallway:'common', clubroom:'common',
-  rooftop:'emotional', track:'lively', infirmary:'emotional',
-  shrine:'emotional', station:'romantic', gym:'lively', printroom:'common',
-  bridge:'romantic', cafe:'romantic', beach:'emotional', wedding:'emotional',
-  black:'common'
 };
 
 class VisualNovel {
@@ -156,6 +310,7 @@ class VisualNovel {
     this.audioEl = null;
     this.el = {
       bg: document.getElementById('bg-layer'),
+      bgCanvas: document.getElementById('bg-canvas'),
       char: document.getElementById('char-layer'),
       name: document.getElementById('name-tag'),
       text: document.getElementById('dialogue-text'),
@@ -190,6 +345,7 @@ class VisualNovel {
       if (e.code === 'Escape') { e.preventDefault(); this.toggleMenu(); }
     });
     window.addEventListener('beforeunload', () => this._autoSave());
+    window.addEventListener('resize', () => { if (this.currentBg) this._setBg(this.currentBg); });
   }
 
   _showTitle() {
@@ -213,6 +369,7 @@ class VisualNovel {
     this.el.indicator.style.display = 'block';
     this.el.menuBtn.style.display = 'block';
     this.el.bgmBtn.style.display = 'block';
+    this._playBGM('common');
     this._execNext();
   }
 
@@ -243,12 +400,11 @@ class VisualNovel {
   }
 
   _setBg(id) {
-    const g = BG_GRADIENTS[id] || '#222';
-    this.el.bg.style.background = g;
     this.currentBg = id;
-    if (this.running && BG_BGM_MAP[id] && this.currentBgm !== BG_BGM_MAP[id]) {
-      this._playBGM(BG_BGM_MAP[id]);
-    }
+    const canvas = this.el.bgCanvas;
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+    drawScene(canvas.getContext('2d'), id, canvas.width, canvas.height);
   }
 
   _showNarration(text) {
@@ -323,10 +479,11 @@ class VisualNovel {
       { key:'by', name:'route_shiratama', val:aff.by||0 },
       { key:'max', name:'route_tengoku', val:aff.max||0 }
     ];
-    routes.sort((a,b) => b.val - a.val);
+    const priority = { max:5, yn:4, by:3, xj:2, sy:1 };
+    routes.sort((a,b) => b.val - a.val || priority[b.key] - priority[a.key]);
     let route = routes[0].name;
-    if ((aff.zmx||0) >= 5) route = 'route_shikishi';
-    else if ((aff.js||0) >= 6) route = 'route_kaju';
+    if ((aff.zmx||0) >= 4) route = 'route_shikishi';
+    else if ((aff.js||0) >= 3) route = 'route_kaju';
     else {
       const vals = routes.map(r => r.val);
       if (Math.max(...vals) - Math.min(...vals) <= 1) route = 'route_harem';
@@ -393,7 +550,6 @@ class VisualNovel {
     this.el.choices.innerHTML = '';
     this.el.indicator.style.display = 'none';
     this._hideSprite();
-    this._stopBGM();
     this._setBg('black');
     this.el.name.textContent = '';
     this.el.text.textContent = '';
@@ -496,7 +652,7 @@ const SCRIPT_DATA = [
 {type:'dialogue',char:'YN',text:'「不还怎么行？不然你这种闷骚男会脑补『她是不是想借还钱的借口再见我一面』的吧？」'},
 {type:'dialogue',char:'WZ',text:'「……我才不会。话说回来，我叫温水和彦。」'},
 {type:'dialogue',char:'YN',text:'「温水？好奇怪的名字。行吧温水君，欠你的人情我会记住的。」'},
-{type:'narrate',text:'她就这么转身走了。我以为这就是我们之间的最后一面。——但我错了。'},
+{type:'narrate',text:'她就这么转身走了。我以为这就是我们之间的最后一面。——但我错了。'},{type:'affinity',char:'yn',val:1},
 {type:'bg',id:'hallway'},
 {type:'narrate',text:'几天后，我在走廊上被一个矮小的女生拦住了。她低着头，双手紧紧握着一部手机。然后，她把手机屏幕举到我面前。'},
 {type:'narrate',text:'屏幕上的文字写着：「请加入文艺社。你是唯一的希望。」'},
@@ -572,7 +728,7 @@ const SCRIPT_DATA = [
 {label:'ch3_comfort_xj'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'我在社办的角落里找到了小鞠。她正把脸埋在书本后面。我什么都没说，只是坐在她旁边。'},
 {type:'narrate',text:'三分钟后，她的手机屏幕推到了我面前。'},
-{type:'narrate',text:'「谢谢」——只有一个词。但我知道她说的是什么意思。'},{jump:'ch4'},
+{type:'narrate',text:'「谢谢」——只有一个词。但我知道她说的是什么意思。'},{type:'affinity',char:'zmx',val:1},{jump:'ch4'},
 
 // ===== 第四章：学园祭与逃生梯 =====
 {label:'ch4'},{type:'bg',id:'clubroom'},
@@ -598,7 +754,7 @@ const SCRIPT_DATA = [
 {type:'narrate',text:'「我说过『我就只有文艺社而已』。但我说错了。我不是只有文艺社。我还有——还有愿意帮我的笨蛋。」'},
 {type:'narrate',text:'逃生梯外，夕阳把天空烧成了一片金色。她终于哭了。但没有发出声音。'},
 {type:'dialogue',char:'WZ',text:'「我是文艺社的人。所以我会一直在。」'},
-{type:'affinity',char:'xj',val:3},
+{type:'affinity',char:'xj',val:4},
 {type:'narrate',text:'她举起手机，屏幕上打好了她想说的话——后来这句话成为了我们之间的暗号：'},
 {type:'narrate',text:'「我们文艺社的，都不认输。」'},
 {jump:'ch5'},
@@ -628,14 +784,14 @@ const SCRIPT_DATA = [
 {label:'ch5_yes'},{type:'dialogue',char:'WZ',text:'「好。我当你的推荐人。我相信你能当好会长。」'},
 {type:'dialogue',char:'MAX',text:'「……真的吗？谢谢。温水同学，你果然是个……很好的人。」'},{jump:'ch6'},
 {label:'ch5_think'},{type:'dialogue',char:'WZ',text:'「让我考虑一下。」'},
-{type:'dialogue',char:'MAX',text:'「好。我会等你。」'},{jump:'ch6'},
+{type:'dialogue',char:'MAX',text:'「好。我会等你。」'},{type:'affinity',char:'zmx',val:1},{jump:'ch6'},
 
 // ===== 第六章：情人节与妹妹 =====
 {label:'ch6'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'二月十四日。情人节。石蕗高中里弥漫着某种说不清的紧张气氛。'},
 {type:'narrate',text:'八奈见杏菜一早就来到了社办，手上提着一个纸袋。但她把纸袋随手放在桌上后，就开始若无其事地吃薯片。'},
 {type:'dialogue',char:'WZ',text:'「这是什么？」'},
-{type:'dialogue',char:'YN',text:'「什么是什么？只是吃的。你！想！多！了！」她把纸袋抱进怀里，脸色微红。'},
+{type:'dialogue',char:'YN',text:'「什么是什么？只是吃的。你！想！多！了！」她把纸袋抱进怀里，脸色微红。'},{type:'affinity',char:'yn',val:1},
 {type:'narrate',text:'然后小鞠走了进来。小鞠也拿着一个东西——一个小小的、包装好的盒子。'},
 {type:'narrate',text:'她飞快地把盒子放在我面前的桌上，然后用手机打出一行字：「这不是巧克力。只是材料不够，所以做成了心形。」'},
 {type:'dialogue',char:'YN',text:'「小鞠你刚才是不是说了心形？」'},
@@ -676,7 +832,7 @@ const SCRIPT_DATA = [
 {type:'dialogue',char:'BY',text:'「我喜欢邻家的田中老师。从小就喜欢。但他要和我姐姐结婚了。」'},
 {type:'dialogue',char:'BY',text:'「我只是想在婚礼上说一句话。就一句。说完了我就不会再喜欢他了。可他们连这最后的话都不让我说。」'},
 {type:'narrate',text:'社办里安静了很久。然后，八奈见第一个开口了。'},
-{type:'dialogue',char:'YN',text:'「我们帮你。我们文艺社的，都是败犬。被甩过的人最多。」'},
+{type:'dialogue',char:'YN',text:'「我们帮你。我们文艺社的，都是败犬。被甩过的人最多。」'},{type:'affinity',char:'yn',val:1},{type:'affinity',char:'by',val:1},
 {type:'dialogue',char:'SY',text:'「我也去。说一句再见有什么大不了的。」'},
 {type:'narrate',text:'这就是「婚礼作战」的起点。'},
 {type:'bg',id:'wedding'},
@@ -693,7 +849,7 @@ const SCRIPT_DATA = [
 {label:'ch7_knock'},{type:'dialogue',char:'WZ',text:'「白玉同学，你还好吗？」'},
 {type:'dialogue',char:'BY',text:'「……原来社长是会敲门的啊。不太好。但是比刚才好多了。」'},{jump:'ch7_end'},
 {label:'ch7_wait'},
-{type:'narrate',text:'有些眼泪是不需要安慰的。让它流完就好。'},{jump:'ch7_end'},
+{type:'narrate',text:'有些眼泪是不需要安慰的。让它流完就好。'},{type:'affinity',char:'zmx',val:1},{jump:'ch7_end'},
 {label:'ch7_end'},{type:'affinity',char:'by',val:1},
 {type:'narrate',text:'婚礼作战成功。白玉正式成为了文艺社的一员。她的笑容比以前真诚了一些。'},
 {jump:'ch8'},
@@ -709,8 +865,8 @@ const SCRIPT_DATA = [
 {type:'dialogue',char:'MAX',text:'「我是一个很固执的人。我不擅长交朋友。我不会说好听话。但是我喜欢这所学校——喜欢在这里努力的每一个人。」'},
 {type:'narrate',text:'她说到这里时，鼻血突然流了下来。天爱星用手背擦了擦鼻血，继续说——'},
 {type:'dialogue',char:'MAX',text:'「请让我推大家！！」'},
-{type:'narrate',text:'掌声如雷。天爱星——高票当选。'},
-{type:'bg',id:'bridge'},
+{type:'narrate',text:'掌声如雷。天爱星——高票当选。'},{type:'affinity',char:'sy',val:1},{type:'affinity',char:'yn',val:1},
+{type:'bg',id:'bridge'},{type:'affinity',char:'by',val:1},
 {type:'narrate',text:'选举结束的那天傍晚。天爱星约我去向山大池。这座桥上只有我们两个人。'},
 {type:'dialogue',char:'MAX',text:'「温水同学。我喜欢你。」'},
 {type:'narrate',text:'她站在那里，双手紧紧握着书包的肩带。夕阳把她的侧脸染成了橙色。'},
@@ -736,7 +892,7 @@ const SCRIPT_DATA = [
 {type:'route'},
 
 // ===== 八奈见杏菜线 =====
-{label:'route_yanaami'},{type:'bgm',id:'yn_theme'},{type:'bg',id:'clubroom'},
+{label:'route_yanaami'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 八奈见杏菜线：「食欲与恋心，只差一步」——'},
 {type:'narrate',text:'天爱星的告白之后，我的生活表面上看没什么变化。但八奈见杏菜变了。她来社办的次数变少了。'},
 {type:'bg',id:'hallway'},
@@ -761,7 +917,7 @@ const SCRIPT_DATA = [
 {type:'narrate',text:'她终于哭了。在车站的灯饰下，她抓着我的袖口不放。然后我伸出手——牵住了她的手。'},
 {type:'dialogue',char:'YN',text:'「我不会放手的。以后也是。」'},
 {type:'narrate',text:'那天晚上，丰桥车站前的灯饰在头顶闪烁。我们从「被甩的同伴」变成了「不想被抢走的人」。食欲与恋心。原来只差一句话的距离。'},
-{type:'end',title:'真结局：灯饰下的牵手',subtitle:'八奈见杏菜线 · 好结局'},
+{type:'bgm',id:'yn_theme'},{type:'end',title:'真结局：灯饰下的牵手',subtitle:'八奈见杏菜线 · 好结局'},
 {label:'yn_good'},{type:'dialogue',char:'WZ',text:'「是想给谁看吗？」'},
 {type:'dialogue',char:'YN',text:'「……你猜。」她没有否认。'},
 {type:'bg',id:'cafe'},
@@ -771,16 +927,16 @@ const SCRIPT_DATA = [
 {type:'dialogue',char:'YN',text:'「太慢了！！再给你一次机会。对我说一句话。」'},
 {type:'dialogue',char:'WZ',text:'「我们不是损友了。最好的朋友，然后是——」我脸红了。她也是。'},
 {type:'narrate',text:'甜品店的窗外，丰桥的街景一如既往地安静。一个女生终于不用再假装不在乎。'},
-{type:'end',title:'好结局：甜品店的告白',subtitle:'八奈见杏菜线 · 好结局'},
+{type:'bgm',id:'yn_theme'},{type:'end',title:'好结局：甜品店的告白',subtitle:'八奈见杏菜线 · 好结局'},
 {label:'yn_normal'},
 {type:'narrate',text:'我什么都没有回答。她等了一会儿。然后收回了手。'},
 {type:'dialogue',char:'YN',text:'「……也是呢。温水君就是这么闷的人。没关系。我真的——真的习惯了被甩。」'},
 {type:'narrate',text:'她转身往站台走去。白色的裙摆被风吹起。电车来了。她没有回头。'},
 {type:'narrate',text:'我们依然在逃生梯吃便当。她偶尔会抱怨「早知道当年不借那一千日元了」。但每次说完，她都会笑着递过来一盒便当。维持损友。也许有些感情，就是永远留在日落的逃生梯上比较好吧。'},
-{type:'end',title:'普通结局：最好的饭友',subtitle:'八奈见杏菜线 · 普通结局'},
+{type:'bgm',id:'yn_theme'},{type:'end',title:'普通结局：最好的饭友',subtitle:'八奈见杏菜线 · 普通结局'},
 
 // ===== 烧盐柠檬线 =====
-{label:'route_yakishio'},{type:'bgm',id:'sy_theme'},{type:'bg',id:'track'},
+{label:'route_yakishio'},{type:'bg',id:'track'},
 {type:'narrate',text:'—— 烧盐柠檬线：「奔跑的理由，不只一个」——'},
 {type:'narrate',text:'烧盐柠檬每天放学后都在跑步。但最近，她多了一个新理由——她会在每圈经过文艺社社办楼下时看过来。'},
 {type:'bg',id:'clubroom'},
@@ -800,7 +956,7 @@ const SCRIPT_DATA = [
 {type:'dialogue',char:'SY',text:'「那就好。接下来是八百米。人生的八百米。和慢慢追上来的阿温一起。」'},
 {type:'dialogue',char:'WZ',text:'「我愿意追上你。」'},
 {type:'narrate',text:'她笑了。然后踮起脚尖——在车站月台上，在所有乘客的注视下，烧盐柠檬张开双臂，第一次不是跑开，而是跑了过来。她说「比赛结束。现在是休息时间」。我说「那就休息一辈子吧」。'},
-{type:'end',title:'真结局：车站月台的拥抱',subtitle:'烧盐柠檬线 · 好结局'},
+{type:'bgm',id:'sy_theme'},{type:'end',title:'真结局：车站月台的拥抱',subtitle:'烧盐柠檬线 · 好结局'},
 {label:'sy_good'},{type:'dialogue',char:'WZ',text:'「我是文艺社的人。不会退社的。」'},
 {type:'dialogue',char:'SY',text:'「——我猜到你会这么说。但挑战不变。我要堂堂正正。」'},
 {type:'bg',id:'infirmary'},
@@ -808,15 +964,15 @@ const SCRIPT_DATA = [
 {type:'dialogue',char:'SY',text:'「我可不是只想让你看我跑步。」'},
 {type:'dialogue',char:'WZ',text:'「我知道。」'},
 {type:'narrate',text:'窗外传来田径队的口号声。她握着我的手，很暖。'},
-{type:'end',title:'好结局：保健室的牵手',subtitle:'烧盐柠檬线 · 好结局'},
+{type:'bgm',id:'sy_theme'},{type:'end',title:'好结局：保健室的牵手',subtitle:'烧盐柠檬线 · 好结局'},
 {label:'sy_normal'},
 {type:'narrate',text:'我什么都没说。她笑了——和平时一模一样的笑容。'},
 {type:'dialogue',char:'SY',text:'「没关系。我会一直跑。阿温可以在终点看。」'},
 {type:'narrate',text:'她第三次获得全国第三名的那个夏天，我从电视上看到了她的比赛。她的背影依然笔直。依然美丽。也许有些女孩——注定是在别人视线尽头奔跑的存在。'},
-{type:'end',title:'普通结局：跑者的背影',subtitle:'烧盐柠檬线 · 普通结局'},
+{type:'bgm',id:'sy_theme'},{type:'end',title:'普通结局：跑者的背影',subtitle:'烧盐柠檬线 · 普通结局'},
 
 // ===== 小鞠知花线 =====
-{label:'route_komari'},{type:'bgm',id:'xj_theme'},{type:'bg',id:'clubroom'},
+{label:'route_komari'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 小鞠知花线：「从壳里爬出来的人」——'},
 {type:'narrate',text:'天爱星的告白后，我以为最先来找我的是八奈见。结果是小鞠。她没敲门。直接闯进社办，把一叠印刷纸扔在我桌上。'},
 {type:'dialogue',char:'XJ',text:'「天爱星的事，我知道。温水是大笨蛋。」'},
@@ -838,20 +994,20 @@ const SCRIPT_DATA = [
 {type:'narrate',text:'她的眼泪夺眶而出。没有声音。只是一直掉。最后放弃——用嘴型说了三个字。『喜欢你』。'},
 {type:'dialogue',char:'WZ',text:'「我也是。认真的。」'},
 {type:'narrate',text:'那一天，文艺社的社办被夕阳灌满。小鞠知花站在窗前，没有用手机，没有打一个字。从躲在壳里的仓鼠到能用声音传达心意的少女——她花了整整三年的高中时光。在最后这一刻——她不躲了。'},
-{type:'end',title:'真结局：社办夕阳下的开口',subtitle:'小鞠知花线 · 好结局'},
+{type:'bgm',id:'xj_theme'},{type:'end',title:'真结局：社办夕阳下的开口',subtitle:'小鞠知花线 · 好结局'},
 {label:'xj_good'},{type:'dialogue',char:'WZ',text:'「你说得很好。」'},
 {type:'narrate',text:'她——抽了一下鼻子。然后把手机举起来。屏幕上写着：「那接下来的话，我写给你看」。'},
 {type:'narrate',text:'「我 喜 欢 温 水 和 彦」——隔着手机屏幕，我看到她的泪水模糊了显示。'},
 {type:'narrate',text:'屏幕上的那七个字是她在心里打了千百遍的句子。我说「我看到了」。她说「那就好」。'},
-{type:'end',title:'好结局：手机打出的告白',subtitle:'小鞠知花线 · 好结局'},
+{type:'bgm',id:'xj_theme'},{type:'end',title:'好结局：手机打出的告白',subtitle:'小鞠知花线 · 好结局'},
 {label:'xj_normal'},
 {type:'narrate',text:'我等着她。一直等着。但她最终没说出后面的话。只是笑了笑——很小很小的弧度。'},
 {type:'dialogue',char:'XJ',text:'「……今天就到这里。明天继续练习。」'},
 {type:'narrate',text:'文艺社走上正轨。小鞠能独当一面主持会议了。她是副社长。我是社长。我们是最好的搭档。——这样就够了吧。'},
-{type:'end',title:'普通结局：最佳搭档',subtitle:'小鞠知花线 · 普通结局'},
+{type:'bgm',id:'xj_theme'},{type:'end',title:'普通结局：最佳搭档',subtitle:'小鞠知花线 · 普通结局'},
 
 // ===== 白玉璃子线 =====
-{label:'route_shiratama'},{type:'bgm',id:'romantic'},{type:'bg',id:'clubroom'},
+{label:'route_shiratama'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 白玉璃子线：「假面下的真心」——'},
 {type:'narrate',text:'天爱星的告白后，文艺社的气氛变得微妙。白玉璃子——这个一年级的学妹——最近总是沉默。'},
 {type:'narrate',text:'某天放学后。社办里只有她和我。她坐在窗边，没有化妆。我第一次看到她素颜的样子。'},
@@ -868,18 +1024,18 @@ const SCRIPT_DATA = [
 {type:'narrate',text:'她愣住了。然后——眼泪滑了下来。没有声音。'},
 {type:'dialogue',char:'BY',text:'「部长你这样——让我的所有招式都失效了。我不再演了。这就是真实的我——一个不完美、不可爱的普通学妹。这样的我——部长愿意接纳吗？」'},
 {type:'narrate',text:'我没说话——牵了她的手。那天下午，我们分享了一杯咖啡——她第一次不加糖。因为——「真正的白玉璃子，喜欢苦的」。'},
-{type:'end',title:'真结局：咖啡厅里的真实',subtitle:'白玉璃子线 · 好结局'},
+{type:'bgm',id:'romantic'},{type:'end',title:'真结局：咖啡厅里的真实',subtitle:'白玉璃子线 · 好结局'},
 {label:'by_good'},{type:'dialogue',char:'WZ',text:'「你不需要演。做你自己就好。」'},
 {type:'dialogue',char:'BY',text:'「部长总是说这种话呢。但我还是很高兴。因为你是第一个看穿的人。」'},
 {type:'narrate',text:'合宿最后一天。天台。星空的夜晚。她没有化妆。她说「我不再找替身了。我喜欢部长。不是因为谁的味道。」'},
-{type:'end',title:'好结局：素颜的天台告白',subtitle:'白玉璃子线 · 好结局'},
+{type:'bgm',id:'romantic'},{type:'end',title:'好结局：素颜的天台告白',subtitle:'白玉璃子线 · 好结局'},
 {label:'by_normal'},
 {type:'dialogue',char:'WZ',text:'「让我看看真实的你。不用着急。」'},
 {type:'narrate',text:'她安静地看着我。然后笑了——和平常一样的、完美的微笑。她始终没有摘下面具。但她在文艺社找到了第二个家。'},
-{type:'end',title:'普通结局：可靠的学妹',subtitle:'白玉璃子线 · 普通结局'},
+{type:'bgm',id:'romantic'},{type:'end',title:'普通结局：可靠的学妹',subtitle:'白玉璃子线 · 普通结局'},
 
 // ===== 马剃天爱星线 =====
-{label:'route_tengoku'},{type:'bgm',id:'romantic'},{type:'bg',id:'bridge'},
+{label:'route_tengoku'},{type:'bg',id:'bridge'},
 {type:'narrate',text:'—— 马剃天爱星线：「认真的人，认真的喜欢」——'},
 {type:'narrate',text:'向山大池的桥上。夕阳把桥面染成橙色。马剃天爱星站在我面前，说出了她的告白。'},
 {type:'dialogue',char:'MAX',text:'「温水同学——不，温水和彦。我喜欢你。从你答应做我的推荐人那天开始。」'},
@@ -897,18 +1053,18 @@ const SCRIPT_DATA = [
 {type:'narrate',text:'周末的咖啡厅。天爱星坐在我对面，往咖啡里加了三勺糖。'},
 {type:'dialogue',char:'WZ',text:'「你不是不喜欢咖啡吗？」'},
 {type:'dialogue',char:'MAX',text:'「你喜欢。所以我想习惯。」认真的人，连喜欢一杯不喜欢的饮料都全力以赴。'},
-{type:'end',title:'真结局：百分百的认真',subtitle:'马剃天爱星线 · 好结局'},
+{type:'bgm',id:'romantic'},{type:'end',title:'真结局：百分百的认真',subtitle:'马剃天爱星线 · 好结局'},
 {label:'max_good'},{type:'dialogue',char:'WZ',text:'「让我慢慢回答你。但不是拒绝——是我也需要认真想。」'},
 {type:'dialogue',char:'MAX',text:'「好。我等。多久都等。因为认真的人——认真等答案也是应该的。」'},
 {type:'narrate',text:'毕业前夕。同一座桥。同一个夕阳。我说「可能不会是现在。但有一天，我会回答你」。她说「那就够了」。'},
-{type:'end',title:'好结局：我会等你的',subtitle:'马剃天爱星线 · 好结局'},
+{type:'bgm',id:'romantic'},{type:'end',title:'好结局：我会等你的',subtitle:'马剃天爱星线 · 好结局'},
 {label:'max_normal'},{type:'dialogue',char:'WZ',text:'「给我一点时间。我不擅长立刻回答。」'},
 {type:'dialogue',char:'MAX',text:'「好。但不管答案是什么——我们是最好的搭档。这一点不会变。」'},
 {type:'narrate',text:'我们没有在一起。但她成为了我大学也保持联系的朋友。每年选举季，她都会在信里夹一张手写报告卡——字迹永远一丝不苟。'},
-{type:'end',title:'普通结局：最好的搭档',subtitle:'马剃天爱星线 · 普通结局'},
+{type:'bgm',id:'romantic'},{type:'end',title:'普通结局：最好的搭档',subtitle:'马剃天爱星线 · 普通结局'},
 
 // ===== 隐藏线 =====
-{label:'route_shikishi'},{type:'bgm',id:'emotional'},{type:'bg',id:'cafe'},
+{label:'route_shikishi'},{type:'bg',id:'cafe'},
 {type:'narrate',text:'—— 隐藏线：志喜屋梦子 ——'},
 {type:'narrate',text:'圣诞夜。我在咖啡厅偶遇了志喜屋学姐。她一个人坐在角落。'},
 {type:'dialogue',char:'ZMX',text:'「温水君。想和我交往吗？」安静的一句话。没有任何征兆。'},
@@ -920,9 +1076,9 @@ const SCRIPT_DATA = [
 {type:'dialogue',char:'WZ',text:'「会。」'},
 {type:'narrate',text:'毕业后。她考上了东京的大学。我去车站送她。她第一次——露出了不是「扮的」笑容。浅浅的。真的。'},
 {type:'narrate',text:'她进了检票口。走了三步。然后回头——用手比了一个丧尸的手势。我说「学姐你还是没变」。她说「变了。以前我不会回头」。'},
-{type:'end',title:'隐藏结局：车站的丧尸',subtitle:'志喜屋梦子 · 隐藏线'},
+{type:'bgm',id:'emotional'},{type:'end',title:'隐藏结局：车站的丧尸',subtitle:'志喜屋梦子 · 隐藏线'},
 
-{label:'route_kaju'},{type:'bgm',id:'romantic'},{type:'bg',id:'clubroom'},
+{label:'route_kaju'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 隐藏线：温水佳树 ——'},
 {type:'narrate',text:'在所有女主角中——最早的其实是佳树。从小一起长大的妹妹。永远站在我三步之外的妹妹。'},
 {type:'dialogue',char:'JS',text:'「兄长大人。你知道吗——佳树和兄长大人，其实没有血缘关系。」'},
@@ -932,9 +1088,9 @@ const SCRIPT_DATA = [
 {type:'dialogue',char:'JS',text:'「兄妹也可以一直一直在一起。对吗？」'},
 {type:'dialogue',char:'WZ',text:'「……对。你是我妹妹。以前是。现在是。以后也是。」'},
 {type:'narrate',text:'她笑了。比任何女生都温柔的笑容。或许有些感情——不用跨越这条线。'},
-{type:'end',title:'隐藏结局：永远的妹妹',subtitle:'温水佳树 · 兄控结局'},
+{type:'bgm',id:'romantic'},{type:'end',title:'隐藏结局：永远的妹妹',subtitle:'温水佳树 · 兄控结局'},
 
-{label:'route_harem'},{type:'bgm',id:'lively'},{type:'bg',id:'clubroom'},
+{label:'route_harem'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 隐藏线：女性公敌结局 ——'},
 {type:'narrate',text:'天爱星的告白后——事情很快就失控了。'},
 {type:'narrate',text:'某天放学后。我被叫到文艺社。八奈见、烧盐、小鞠、白玉、佳树——还有天爱星——全部坐在社办的会议桌旁。'},
@@ -942,7 +1098,7 @@ const SCRIPT_DATA = [
 {type:'dialogue',char:'MAX',text:'「是——是惩罚。」天爱星红着脸推了推眼镜。'},
 {type:'narrate',text:'于是，我的高中最后一年变成了这样：星期一和八奈见在逃生梯吃便当。星期二去田径场看烧盐训练。星期三帮小鞠搬印刷纸。星期四和天爱星整文件。星期五听白玉的撩拨。周末和佳树购物。'},
 {type:'narrate',text:'「败北女角」们这次赢了。因为她们制定规则，她们说了算。而我——温水公敌和彦——永远不会忘记这群人。'},
-{type:'end',title:'隐藏结局：女性公敌',subtitle:'修罗场 · 全员结局'},
+{type:'bgm',id:'lively'},{type:'end',title:'隐藏结局：女性公敌',subtitle:'修罗场 · 全员结局'},
 
 // ===== STAFF =====
 {label:'staff'},{type:'bg',id:'black'},
