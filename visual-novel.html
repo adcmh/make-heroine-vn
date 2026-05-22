@@ -47,6 +47,9 @@ body{
 #top-bar span{color:rgba(255,255,255,.5);font-size:15px}
 #menu-btn{position:absolute;top:12px;right:24px;z-index:25;background:none;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.6);padding:6px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:14px}
 #menu-btn:hover{background:rgba(255,255,255,.1)}
+#bgm-btn{position:absolute;top:12px;right:80px;z-index:25;background:none;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.6);padding:6px 16px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:14px}
+#bgm-btn:hover{background:rgba(255,255,255,.1)}
+#bgm-btn.muted{color:rgba(255,100,100,.6);border-color:rgba(255,100,100,.3)}
 #save-menu{display:none}
 </style>
 </head>
@@ -63,6 +66,7 @@ body{
   <div id="overlay"></div>
   <div id="top-bar"><span id="affinity-display"></span></div>
   <button id="menu-btn" onclick="VN.toggleMenu()">菜单</button>
+  <button id="bgm-btn" onclick="VN.toggleBGM()">♫</button>
   <div id="save-menu" style="display:none;position:absolute;top:60px;right:24px;background:rgba(0,0,0,.9);padding:16px;border-radius:8px;z-index:30;display:none;flex-direction:column;gap:8px">
     <button onclick="VN.saveGame()" style="font-family:inherit;padding:8px 16px;cursor:pointer">保存</button>
     <button onclick="VN.loadGame()" style="font-family:inherit;padding:8px 16px;cursor:pointer">读取</button>
@@ -89,6 +93,48 @@ const BG_COLORS = {
   shrine:'#1a1a3f', station:'#3f3a2a', gym:'#4a4a2f', printroom:'#3a3a3f',
   bridge:'#2a3f4f', cafe:'#3a2f2f', beach:'#1a3f5f', wedding:'#5a4a5a'
 };
+const BG_GRADIENTS = {
+  black:'#000',
+  restaurant:'linear-gradient(135deg, #2d1f1a 0%, #1a1010 50%, #2d1f1a 100%)',
+  classroom:'linear-gradient(135deg, #3a3a4a 0%, #2a2a3a 50%, #3a3a4a 100%)',
+  hallway:'linear-gradient(180deg, #4a4a3a 0%, #3a3a2a 50%, #2a2a3a 100%)',
+  clubroom:'linear-gradient(135deg, #3a2f1a 0%, #2a1f10 50%, #3a2f1a 100%)',
+  rooftop:'linear-gradient(180deg, #1a2f3f 0%, #0a1f2f 30%, #2a4f6f 100%)',
+  track:'linear-gradient(180deg, #2f3a1a 0%, #1a2f0a 50%, #4a5a2a 100%)',
+  infirmary:'linear-gradient(180deg, #4a5a5a 0%, #3a4a4a 50%, #5a6a6a 100%)',
+  shrine:'linear-gradient(180deg, #1a1a3f 0%, #0a0a2f 50%, #2a2a4f 100%)',
+  station:'linear-gradient(135deg, #3f3a2a 0%, #2a2a1a 50%, #4f4a3a 100%)',
+  gym:'linear-gradient(180deg, #4a4a2f 0%, #3a3a1f 50%, #5a5a3f 100%)',
+  printroom:'linear-gradient(180deg, #3a3a3f 0%, #2a2a2f 50%, #4a4a4f 100%)',
+  bridge:'linear-gradient(180deg, #2a3f4f 0%, #1a2f3f 30%, #4a6f8f 100%)',
+  cafe:'linear-gradient(135deg, #3a2f2f 0%, #2a1f1f 50%, #4a3f3f 100%)',
+  beach:'linear-gradient(180deg, #1a3f5f 0%, #0a2f4f 30%, #3a6f9f 100%)',
+  wedding:'linear-gradient(135deg, #5a4a5a 0%, #4a3a4a 50%, #6a5a6a 100%)'
+};
+const SPRITE_MAP = {
+  YN: { default:'sprites/yn_default.png', smile:'sprites/yn_smile.png', embarrassed:'sprites/yn_embarrassed.png' },
+  SY: { default:'sprites/sy_default.jpg' },
+  XJ: { default:'sprites/xj_default.png', shy:'sprites/xj_shy.png' },
+  ZMX: { default:'sprites/zmx_default.jpg' },
+  JS: { default:'sprites/js_default.png' }
+};
+const BGM_MAP = {
+  common: 'audio/bgm_wz_prepare.mp3',
+  lively: 'audio/bgm_common_kawaii.mp3',
+  emotional: 'audio/bgm_xj_feelmysoul.mp3',
+  romantic: 'audio/bgm_yn_love2000.mp3',
+  yn_theme: 'audio/bgm_yn_lilula.mp3',
+  sy_theme: 'audio/bgm_sy_crazyforyou.mp3',
+  xj_theme: 'audio/bgm_xj_ashitamo.mp3',
+  ending: 'audio/bgm_ending.mp3'
+};
+const BG_BGM_MAP = {
+  restaurant:'common', classroom:'common', hallway:'common', clubroom:'common',
+  rooftop:'emotional', track:'lively', infirmary:'emotional',
+  shrine:'emotional', station:'romantic', gym:'lively', printroom:'common',
+  bridge:'romantic', cafe:'romantic', beach:'emotional', wedding:'emotional',
+  black:'common'
+};
 
 class VisualNovel {
   constructor() {
@@ -104,6 +150,10 @@ class VisualNovel {
     this.choiceMode = false;
     this.currentRoute = '';
     this.currentBg = 'black';
+    this.currentBgm = null;
+    this.bgmMuted = false;
+    this.bgmVolume = 0.5;
+    this.audioEl = null;
     this.el = {
       bg: document.getElementById('bg-layer'),
       char: document.getElementById('char-layer'),
@@ -114,7 +164,8 @@ class VisualNovel {
       indicator: document.getElementById('indicator'),
       dbox: document.getElementById('dialogue-box'),
       menu: document.getElementById('save-menu'),
-      menuBtn: document.getElementById('menu-btn')
+      menuBtn: document.getElementById('menu-btn'),
+      bgmBtn: document.getElementById('bgm-btn')
     };
     this._bindEvents();
     this._showTitle();
@@ -150,6 +201,7 @@ class VisualNovel {
     this.el.overlay.style.display = 'flex';
     this.el.indicator.style.display = 'none';
     this.el.menuBtn.style.display = 'none';
+    this.el.bgmBtn.style.display = 'none';
     this.running = false;
   }
 
@@ -160,6 +212,7 @@ class VisualNovel {
     this.el.overlay.style.display = 'none';
     this.el.indicator.style.display = 'block';
     this.el.menuBtn.style.display = 'block';
+    this.el.bgmBtn.style.display = 'block';
     this._execNext();
   }
 
@@ -183,21 +236,26 @@ class VisualNovel {
       case 'affinity': this.affinity[cmd.char] = (this.affinity[cmd.char]||0) + cmd.val; this._execNext(); break;
       case 'jump': this.scriptIdx = this.labelMap[cmd.target]; this._execNext(); break;
       case 'route': this._routeSelect(); break;
+      case 'bgm': this._playBGM(cmd.id); this._execNext(); break;
       case 'end': this._showEnding(cmd); break;
       default: this._execNext();
     }
   }
 
   _setBg(id) {
-    const c = BG_COLORS[id] || '#222';
-    this.el.bg.style.background = c;
+    const g = BG_GRADIENTS[id] || '#222';
+    this.el.bg.style.background = g;
     this.currentBg = id;
+    if (this.running && BG_BGM_MAP[id] && this.currentBgm !== BG_BGM_MAP[id]) {
+      this._playBGM(BG_BGM_MAP[id]);
+    }
   }
 
   _showNarration(text) {
     this.choiceMode = false;
     this.el.choices.innerHTML = '';
     this.el.name.textContent = '';
+    this._hideSprite();
     this._typeText(text);
   }
 
@@ -206,6 +264,7 @@ class VisualNovel {
     this.el.choices.innerHTML = '';
     this.el.name.textContent = CHAR_NAMES[char] || char;
     this.el.name.style.color = CHAR_COLORS[char] || '#fff';
+    this._showSprite(char);
     this._typeText(text);
   }
 
@@ -279,10 +338,62 @@ class VisualNovel {
     this._execNext();
   }
 
+  _showSprite(char) {
+    if (char === 'WZ') { this._hideSprite(); return; }
+    const sprites = SPRITE_MAP[char];
+    if (!sprites) { this._hideSprite(); return; }
+    const src = sprites.default;
+    const cur = this.el.char.querySelector('img');
+    if (cur && cur.dataset.char === char) return;
+    this.el.char.innerHTML = '<img src="' + src + '" class="char-sprite" data-char="' + char + '" style="opacity:0" onload="this.style.opacity=1">';
+  }
+
+  _hideSprite() {
+    this.el.char.innerHTML = '';
+  }
+
+  _playBGM(id) {
+    if (!BGM_MAP[id] || this.currentBgm === id) return;
+    this.currentBgm = id;
+    if (this.bgmMuted) return;
+    if (this.audioEl) {
+      this.audioEl.pause();
+      this.audioEl.remove();
+    }
+    this.audioEl = new Audio(BGM_MAP[id]);
+    this.audioEl.loop = true;
+    this.audioEl.volume = this.bgmVolume;
+    this.audioEl.play().catch(() => {});
+  }
+
+  _stopBGM() {
+    if (this.audioEl) {
+      this.audioEl.pause();
+      this.audioEl.remove();
+      this.audioEl = null;
+    }
+    this.currentBgm = null;
+  }
+
+  toggleBGM() {
+    this.bgmMuted = !this.bgmMuted;
+    if (this.bgmMuted) {
+      this.el.bgmBtn.classList.add('muted');
+      this.el.bgmBtn.textContent = '♪';
+      if (this.audioEl) { this.audioEl.pause(); this.audioEl.remove(); this.audioEl = null; }
+    } else {
+      this.el.bgmBtn.classList.remove('muted');
+      this.el.bgmBtn.textContent = '♫';
+      if (this.currentBgm) this._playBGM(this.currentBgm);
+    }
+  }
+
   _showEnding(cmd) {
     this.running = false;
     this.el.choices.innerHTML = '';
     this.el.indicator.style.display = 'none';
+    this._hideSprite();
+    this._stopBGM();
     this._setBg('black');
     this.el.name.textContent = '';
     this.el.text.textContent = '';
@@ -290,22 +401,27 @@ class VisualNovel {
     this.el.overlay.innerHTML = '<h1>' + (cmd.title || 'END') + '</h1><p>' + (cmd.subtitle || '') + '</p><p style="font-size:16px;color:#888">好感度总分: ' + score + '</p><button class="btn" onclick="VN.startGame()">重新开始</button><button class="btn" onclick="VN._showTitle()" style="margin-top:8px">返回标题</button>';
     this.el.overlay.style.display = 'flex';
     this.el.menuBtn.style.display = 'none';
+    this.el.bgmBtn.style.display = 'none';
   }
 
   _showEnd() {
     this.running = false;
     this.el.choices.innerHTML = '';
     this.el.indicator.style.display = 'none';
+    this._hideSprite();
+    this._stopBGM();
     this._setBg('black');
     this.el.name.textContent = '';
     this.el.text.textContent = '';
     this.el.overlay.innerHTML = '<h1>STAFF</h1><p>原作：雨森たきび《败北女角太多了！》</p><p>改编：dacmh</p><p>「我们败北女角，永不认输。」——文艺社全员</p><button class="btn" onclick="VN.startGame()">重新开始</button><button class="btn" onclick="VN._showTitle()" style="margin-top:8px">返回标题</button>';
     this.el.overlay.style.display = 'flex';
+    this.el.menuBtn.style.display = 'none';
+    this.el.bgmBtn.style.display = 'none';
   }
 
   saveGame() {
     this.toggleMenu();
-    const data = { idx: this.scriptIdx, aff: this.affinity, route: this.currentRoute, bg: this.currentBg };
+    const data = { idx: this.scriptIdx, aff: this.affinity, route: this.currentRoute, bg: this.currentBg, bgm: this.currentBgm };
     localStorage.setItem('makeine_vn_save', JSON.stringify(data));
     this._flashMsg('已保存');
   }
@@ -319,15 +435,17 @@ class VisualNovel {
     this.affinity = data.aff;
     this.currentRoute = data.route;
     if (data.bg) this._setBg(data.bg);
+    if (data.bgm) this._playBGM(data.bgm);
     this.running = true;
     this.el.overlay.style.display = 'none';
     this.el.indicator.style.display = 'block';
     this.el.menuBtn.style.display = 'block';
+    this.el.bgmBtn.style.display = 'block';
     this._execNext();
   }
 
   _autoSave() {
-    const data = { idx: this.scriptIdx, aff: this.affinity, route: this.currentRoute, bg: this.currentBg };
+    const data = { idx: this.scriptIdx, aff: this.affinity, route: this.currentRoute, bg: this.currentBg, bgm: this.currentBgm };
     localStorage.setItem('makeine_vn_auto', JSON.stringify(data));
   }
 
@@ -618,7 +736,7 @@ const SCRIPT_DATA = [
 {type:'route'},
 
 // ===== 八奈见杏菜线 =====
-{label:'route_yanaami'},{type:'bg',id:'clubroom'},
+{label:'route_yanaami'},{type:'bgm',id:'yn_theme'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 八奈见杏菜线：「食欲与恋心，只差一步」——'},
 {type:'narrate',text:'天爱星的告白之后，我的生活表面上看没什么变化。但八奈见杏菜变了。她来社办的次数变少了。'},
 {type:'bg',id:'hallway'},
@@ -662,7 +780,7 @@ const SCRIPT_DATA = [
 {type:'end',title:'普通结局：最好的饭友',subtitle:'八奈见杏菜线 · 普通结局'},
 
 // ===== 烧盐柠檬线 =====
-{label:'route_yakishio'},{type:'bg',id:'track'},
+{label:'route_yakishio'},{type:'bgm',id:'sy_theme'},{type:'bg',id:'track'},
 {type:'narrate',text:'—— 烧盐柠檬线：「奔跑的理由，不只一个」——'},
 {type:'narrate',text:'烧盐柠檬每天放学后都在跑步。但最近，她多了一个新理由——她会在每圈经过文艺社社办楼下时看过来。'},
 {type:'bg',id:'clubroom'},
@@ -698,7 +816,7 @@ const SCRIPT_DATA = [
 {type:'end',title:'普通结局：跑者的背影',subtitle:'烧盐柠檬线 · 普通结局'},
 
 // ===== 小鞠知花线 =====
-{label:'route_komari'},{type:'bg',id:'clubroom'},
+{label:'route_komari'},{type:'bgm',id:'xj_theme'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 小鞠知花线：「从壳里爬出来的人」——'},
 {type:'narrate',text:'天爱星的告白后，我以为最先来找我的是八奈见。结果是小鞠。她没敲门。直接闯进社办，把一叠印刷纸扔在我桌上。'},
 {type:'dialogue',char:'XJ',text:'「天爱星的事，我知道。温水是大笨蛋。」'},
@@ -733,7 +851,7 @@ const SCRIPT_DATA = [
 {type:'end',title:'普通结局：最佳搭档',subtitle:'小鞠知花线 · 普通结局'},
 
 // ===== 白玉璃子线 =====
-{label:'route_shiratama'},{type:'bg',id:'clubroom'},
+{label:'route_shiratama'},{type:'bgm',id:'romantic'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 白玉璃子线：「假面下的真心」——'},
 {type:'narrate',text:'天爱星的告白后，文艺社的气氛变得微妙。白玉璃子——这个一年级的学妹——最近总是沉默。'},
 {type:'narrate',text:'某天放学后。社办里只有她和我。她坐在窗边，没有化妆。我第一次看到她素颜的样子。'},
@@ -761,7 +879,7 @@ const SCRIPT_DATA = [
 {type:'end',title:'普通结局：可靠的学妹',subtitle:'白玉璃子线 · 普通结局'},
 
 // ===== 马剃天爱星线 =====
-{label:'route_tengoku'},{type:'bg',id:'bridge'},
+{label:'route_tengoku'},{type:'bgm',id:'romantic'},{type:'bg',id:'bridge'},
 {type:'narrate',text:'—— 马剃天爱星线：「认真的人，认真的喜欢」——'},
 {type:'narrate',text:'向山大池的桥上。夕阳把桥面染成橙色。马剃天爱星站在我面前，说出了她的告白。'},
 {type:'dialogue',char:'MAX',text:'「温水同学——不，温水和彦。我喜欢你。从你答应做我的推荐人那天开始。」'},
@@ -790,7 +908,7 @@ const SCRIPT_DATA = [
 {type:'end',title:'普通结局：最好的搭档',subtitle:'马剃天爱星线 · 普通结局'},
 
 // ===== 隐藏线 =====
-{label:'route_shikishi'},{type:'bg',id:'cafe'},
+{label:'route_shikishi'},{type:'bgm',id:'emotional'},{type:'bg',id:'cafe'},
 {type:'narrate',text:'—— 隐藏线：志喜屋梦子 ——'},
 {type:'narrate',text:'圣诞夜。我在咖啡厅偶遇了志喜屋学姐。她一个人坐在角落。'},
 {type:'dialogue',char:'ZMX',text:'「温水君。想和我交往吗？」安静的一句话。没有任何征兆。'},
@@ -804,7 +922,7 @@ const SCRIPT_DATA = [
 {type:'narrate',text:'她进了检票口。走了三步。然后回头——用手比了一个丧尸的手势。我说「学姐你还是没变」。她说「变了。以前我不会回头」。'},
 {type:'end',title:'隐藏结局：车站的丧尸',subtitle:'志喜屋梦子 · 隐藏线'},
 
-{label:'route_kaju'},{type:'bg',id:'clubroom'},
+{label:'route_kaju'},{type:'bgm',id:'romantic'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 隐藏线：温水佳树 ——'},
 {type:'narrate',text:'在所有女主角中——最早的其实是佳树。从小一起长大的妹妹。永远站在我三步之外的妹妹。'},
 {type:'dialogue',char:'JS',text:'「兄长大人。你知道吗——佳树和兄长大人，其实没有血缘关系。」'},
@@ -816,7 +934,7 @@ const SCRIPT_DATA = [
 {type:'narrate',text:'她笑了。比任何女生都温柔的笑容。或许有些感情——不用跨越这条线。'},
 {type:'end',title:'隐藏结局：永远的妹妹',subtitle:'温水佳树 · 兄控结局'},
 
-{label:'route_harem'},{type:'bg',id:'clubroom'},
+{label:'route_harem'},{type:'bgm',id:'lively'},{type:'bg',id:'clubroom'},
 {type:'narrate',text:'—— 隐藏线：女性公敌结局 ——'},
 {type:'narrate',text:'天爱星的告白后——事情很快就失控了。'},
 {type:'narrate',text:'某天放学后。我被叫到文艺社。八奈见、烧盐、小鞠、白玉、佳树——还有天爱星——全部坐在社办的会议桌旁。'},
